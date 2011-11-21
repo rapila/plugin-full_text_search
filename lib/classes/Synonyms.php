@@ -11,7 +11,7 @@ class Synonyms {
 		if(isset($aRootWords[$sWord])) {
 			return $sWord;
 		}
-		$aSynonyms = self::synonyms($sLanguageId);
+		$aSynonyms = self::allSynonyms($sLanguageId);
 		if(!isset($aSynonyms[$sWord])) {
 			return $sWord;
 		}
@@ -23,7 +23,7 @@ class Synonyms {
 			self::$SYNONYMS = array();
 			self::$ROOT_WORDS = array();
 			$sSynonyms = Settings::getInstance('synonyms')->getSettingsArray();
-			foreach($sSynonyms as $sLanguage => $aSynonymList) {
+			foreach($sSynonyms as $sLanguageId => $aSynonymList) {
 				self::$SYNONYMS[$sLanguageId] = array();
 				self::$ROOT_WORDS[$sLanguageId] = array();
 				foreach($aSynonymList as $sRootWord => $aSynonyms) {
@@ -37,24 +37,24 @@ class Synonyms {
 		}
 	}
 
-	private static function synonyms($sLanguageId = null) {
+	private static function &allSynonyms($sLanguageId = null) {
 		self::init();
 		if($sLanguageId === null) {
 			$sLanguageId = Session::language();
 		}
 		if(isset(self::$SYNONYMS[$sLanguageId])) {
-			return &self::$SYNONYMS[$sLanguageId];
+			return self::$SYNONYMS[$sLanguageId];
 		}
 		return array();
 	}
 	
-	private static function rootWords($sLanguageId = null) {
+	private static function &rootWords($sLanguageId = null) {
 		self::init();
 		if($sLanguageId === null) {
 			$sLanguageId = Session::language();
 		}
 		if(isset(self::$ROOT_WORDS[$sLanguageId])) {
-			return &self::$ROOT_WORDS[$sLanguageId];
+			return self::$ROOT_WORDS[$sLanguageId];
 		}
 		return array();
 	}

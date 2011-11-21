@@ -2117,16 +2117,10 @@ abstract class BaseSearchIndexPeer {
 		return self::$IGNORE_RIGHTS || PHP_SAPI === "cli";
 	}
 	public static function mayOperateOn($oUser, $mObject, $sOperation) {
-		if($oUser === null) {
-			return false;
-		}
-		if($oUser->getIsAdmin()) {
-			return true;
-		}
-		return $oUser->hasRole("search_index");
+		return true;
 	}
 	public static function mayOperateOnOwn($oUser, $mObject, $sOperation) {
-		return $oUser->hasRole("search_index-own");
+		return false;
 	}
 
 } // BaseSearchIndexPeer

@@ -1669,16 +1669,10 @@ abstract class BaseSearchIndexWordPeer {
 		return self::$IGNORE_RIGHTS || PHP_SAPI === "cli";
 	}
 	public static function mayOperateOn($oUser, $mObject, $sOperation) {
-		if($oUser === null) {
-			return false;
-		}
-		if($oUser->getIsAdmin()) {
-			return true;
-		}
-		return $oUser->hasRole("search_index_words");
+		return true;
 	}
 	public static function mayOperateOnOwn($oUser, $mObject, $sOperation) {
-		return $oUser->hasRole("search_index_words-own");
+		return false;
 	}
 
 } // BaseSearchIndexWordPeer

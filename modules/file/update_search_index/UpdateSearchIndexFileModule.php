@@ -21,23 +21,27 @@ class UpdateSearchIndexFileModule extends FileModule {
 		Session::getSession()->setLanguage($this->sLanguageId);
 		
 		//Clear index
-		SearchIndexQuery::create()->filterByLanguageId()->deleteAll();
+		SearchIndexQuery::create()->filterByLanguageId($this->sLanguageId)->delete();
 		
 		//Spider index
 		$oRootPage = PagePeer::getRootPage();
 		$this->oRootNavigationItem = PageNavigationItem::navigationItemForPage($oRootPage);
 		$this->spider($this->oRootNavigationItem);
 		
+		
 		//Update index
 		PreviewManager::setTemporaryManager('FrontendManager');
 		foreach($this->aIndexPaths as $aPath) {
 			$this->index($aPath);
 		}
+		PreviewManager::revertTemporaryManager();
 	}
 	
 	private function spider($oNavigationItem) {
 		FilterModule::getFilters()->handleNavigationPathFound($this->oRootNavigationItem, $oNavigationItem);
-		$this->aIndexPaths[] = $oNavigationItem->getLink();
+		if($oNavigationItem->isIndexed() && !$oNavigationItem->isFolder()) {
+			$this->aIndexPaths[] = $oNavigationItem->getLink();
+		}
 		foreach($oNavigationItem->getChildren($this->sLanguageId, true, true) as $oSubNavigationItem) {
 			$this->spider($oSubNavigationItem);
 		}
@@ -48,7 +52,7 @@ class UpdateSearchIndexFileModule extends FileModule {
 		PageNavigationItem::clearCache();
 		
 		while(count($aPath) > 0) {
-			$oNavigationItem = $oNavigationItem->namedChild(array_pop($aPath), $this->sLanguageId, true, true);
+			$oNavigationItem = $oNavigationItem->namedChild(array_shift($aPath), $this->sLanguageId, true, true);
 		}
 		FilterModule::getFilters()->handleNavigationPathFound($this->oRootNavigationItem, $oNavigationItem);
 		FrontendManager::$CURRENT_NAVIGATION_ITEM = $oNavigationItem;
@@ -63,6 +67,32 @@ class UpdateSearchIndexFileModule extends FileModule {
 		FilterModule::getFilters()->handlePageNotFoundDetectionComplete($bIsNotFound, FrontendManager::$CURRENT_PAGE, FrontendManager::$CURRENT_NAVIGATION_ITEM, array(&$bIsNotFound));
 		if($bIsNotFound) {
 			return;
+		}
+		$oPageType = PageTypeModule::getModuleInstance(FrontendManager::$CURRENT_PAGE->getPageType(), FrontendManager::$CURRENT_PAGE, FrontendManager::$CURRENT_NAVIGATION_ITEM);
+		$aWords = $oPageType->getWords();
+		$aWords = array_merge($aWords, StringUtil::getWords(FrontendManager::$CURRENT_PAGE->getDescription($this->sLanguageId)), FrontendManager::$CURRENT_PAGE->getConsolidatedKeywords($this->sLanguageId, true));
+		
+		$aPagePath = FrontendManager::$CURRENT_PAGE->getLink();
+		$aNavigationItemPath = FrontendManager::$CURRENT_NAVIGATION_ITEM->getLink();
+		$sPath = implode('/', array_diff($aNavigationItemPath, $aPagePath));
+		
+		$oSearchIndex = new SearchIndex();
+		$oSearchIndex->setPageId(FrontendManager::$CURRENT_PAGE->getId());
+		$oSearchIndex->setPath($sPath);
+		$oSearchIndex->setLanguageId($this->sLanguageId);
+		$oSearchIndex->save();
+		
+		foreach($aWords as $sWord) {
+			$sWord = Synonyms::rootFor($sWord, $this->sLanguageId);
+			$oSearchIndexWord = SearchIndexWordQuery::create()->filterBySearchIndex($oSearchIndex)->filterByWord($sWord)->findOne();
+			if($oSearchIndexWord === null) {
+				$oSearchIndexWord = new SearchIndexWord();
+				$oSearchIndexWord->setSearchIndex($oSearchIndex);
+				$oSearchIndexWord->setWord($sWord);
+			} else {
+				$oSearchIndexWord->incrementCount();
+			}
+			$oSearchIndexWord->save();
 		}
 	}
 }
