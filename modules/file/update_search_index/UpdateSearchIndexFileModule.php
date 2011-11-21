@@ -17,15 +17,22 @@ class UpdateSearchIndexFileModule extends FileModule {
 	}
 	
 	public function renderFile() {
+		//Prerequisites
+		Session::getSession()->setLanguage($this->sLanguageId);
+		
 		//Clear index
 		SearchIndexQuery::create()->filterByLanguageId()->deleteAll();
+		
 		//Spider index
 		$oRootPage = PagePeer::getRootPage();
 		$this->oRootNavigationItem = PageNavigationItem::navigationItemForPage($oRootPage);
 		$this->spider($this->oRootNavigationItem);
 		
-		Util::dumpAll($this->aIndexPaths);
-		
+		//Update index
+		PreviewManager::setTemporaryManager('FrontendManager');
+		foreach($this->aIndexPaths as $aPath) {
+			$this->index($aPath);
+		}
 	}
 	
 	private function spider($oNavigationItem) {
@@ -36,7 +43,26 @@ class UpdateSearchIndexFileModule extends FileModule {
 		}
 	}
 
-	private function indexForPage(Page $oPage) {
-		FrontendManager::$CURRENT_PAGE = $oPage;
+	private function index(array $aPath) {
+		$oNavigationItem = $this->oRootNavigationItem;
+		PageNavigationItem::clearCache();
+		
+		while(count($aPath) > 0) {
+			$oNavigationItem = $oNavigationItem->namedChild(array_pop($aPath), $this->sLanguageId, true, true);
+		}
+		FilterModule::getFilters()->handleNavigationPathFound($this->oRootNavigationItem, $oNavigationItem);
+		FrontendManager::$CURRENT_NAVIGATION_ITEM = $oNavigationItem;
+		$oPageNavigationItem = $oNavigationItem;
+		while(!($oPageNavigationItem instanceof PageNavigationItem)) {
+			$oPageNavigationItem = $oPageNavigationItem->getParent();
+		}
+		FrontendManager::$CURRENT_PAGE = $oPageNavigationItem->getMe();
+		$bIsNotFound = false;
+		FilterModule::getFilters()->handlePageHasBeenSet(FrontendManager::$CURRENT_PAGE, $bIsNotFound, FrontendManager::$CURRENT_NAVIGATION_ITEM);
+		FilterModule::getFilters()->handleRequestStarted();
+		FilterModule::getFilters()->handlePageNotFoundDetectionComplete($bIsNotFound, FrontendManager::$CURRENT_PAGE, FrontendManager::$CURRENT_NAVIGATION_ITEM, array(&$bIsNotFound));
+		if($bIsNotFound) {
+			return;
+		}
 	}
 }
