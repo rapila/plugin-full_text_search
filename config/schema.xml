@@ -1,0 +1,26 @@
+<table name="search_index" phpName="SearchIndex">
+	<column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+	<column name="page_id" type="integer" required="true"/>
+	<foreign-key foreignTable="pages" onDelete="cascade">
+		<reference local="page_id" foreign="id"/>
+	</foreign-key>
+	<column name="path" type="varchar" required="true" size="256" />
+	<column name="language_id" type="varchar" size="3" required="true" primaryKey="true" />
+	<foreign-key foreignTable="languages">
+		<reference local="language_id" foreign="id" />
+	</foreign-key>
+	<unique>
+		<unique-column name="page_id" />
+		<unique-column name="path" />
+		<unique-column name="language_id" />
+	</unique>
+</table>
+
+<table name="search_index_words" phpName="SearchIndexWord">
+	<column name="search_index_id" type="integer" required="true" primaryKey="true" />
+	<foreign-key foreignTable="search_index" onDelete="cascade">
+		<reference local="search_index_id" foreign="id"/>
+	</foreign-key>
+	<column name="word" type="varchar" required="true" size="256" primaryKey="true" />
+	<column name="count" type="integer" required="true" default="1" />
+</table>
