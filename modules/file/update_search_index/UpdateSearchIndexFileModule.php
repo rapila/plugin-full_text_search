@@ -28,11 +28,16 @@ class UpdateSearchIndexFileModule extends FileModule {
 		$this->oRootNavigationItem = PageNavigationItem::navigationItemForPage($oRootPage);
 		$this->spider($this->oRootNavigationItem);
 		
+		//GC
+		gc_enable();
 		
 		//Update index
 		PreviewManager::setTemporaryManager('FrontendManager');
 		foreach($this->aIndexPaths as $aPath) {
 			$this->index($aPath);
+			set_time_limit(30);
+			gc_collect_cycles();
+			print "Indexed ".implode('/', $aPath)."\n";
 		}
 		PreviewManager::revertTemporaryManager();
 	}
