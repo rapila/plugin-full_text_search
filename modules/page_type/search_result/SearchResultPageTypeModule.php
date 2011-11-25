@@ -10,11 +10,28 @@ class SearchResultPageTypeModule extends PageTypeModule {
 	
 	public function display(Template $oTemplate, $bIsPreview = false) {
 		$sTemplateName = $this->oPage->getTemplateNameUsed();
+
+		$oListTemplate = null;
+		$oItemTemplatePrototype = null;
+		try {
+			$oListTemplate = new Template("search_results/$sTemplateName");
+			$oItemTemplatePrototype = new Template("search_results/${sTemplateName}_item");
+		} catch (Exception $e) {
+			$oListTemplate = new Template("search_results/default");
+			$oItemTemplatePrototype = new Template("search_results/default_item");
+		}
+
+		$sWords = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
+		$aWords = StringUtil::getWords($sWords);
+		$oSearchWordQuery = SearchIndexWordQuery::create();
+		foreach($aWords as $sWord) {
+			$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, $sWord);
+		}
+		$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
+	
+		Util::dumpAll($oSearchWordQuery->find()->toArray());
 		
-		$oSearchTemplate = new Template("search/{$sTemplateName}_list");
-		$sResultTemplateName = "search/{$sTemplateName}_result";
-		
-		$oTemplate->replaceIdentifier('search_results', $oSearchTemplate);
+		$oTemplate->replaceIdentifier('search_results', $oListTemplate);
 	}
 			 
 	public function setIsDynamicAndAllowedParameterPointers(&$bIsDynamic, &$aAllowedParams, $aModulesToCheck = null) {
