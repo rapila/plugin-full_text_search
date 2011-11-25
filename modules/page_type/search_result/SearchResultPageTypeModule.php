@@ -17,7 +17,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		$oTemplate->replaceIdentifier('search_results', $oSearchTemplate);
 	}
 			 
-	public function setIsDynamicAndAllowedParameterPointers(&$bIsDynamic, &$aAllowedParams) {
+	public function setIsDynamicAndAllowedParameterPointers(&$bIsDynamic, &$aAllowedParams, $aModulesToCheck = null) {
 		$bIsDynamic = true;
 		$aAllowedParams = array('search');
 	}
