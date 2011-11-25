@@ -50,7 +50,6 @@ class SearchResultPageTypeModule extends PageTypeModule {
 
 		foreach($aResults as $iIndexId => $iCount) {
 			$oIndex = SearchIndexQuery::create()->findPk(array($iIndexId, $sLanguageId));
-			ErrorHandler::log($iIndexId);
 			if(!$oIndex || !$oIndex->getPage()) {
 				continue;
 			}
