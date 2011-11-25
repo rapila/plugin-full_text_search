@@ -49,6 +49,18 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	protected $language_id;
 
 	/**
+	 * The value for the link_text field.
+	 * @var        string
+	 */
+	protected $link_text;
+
+	/**
+	 * The value for the page_title field.
+	 * @var        string
+	 */
+	protected $page_title;
+
+	/**
 	 * The value for the created_at field.
 	 * @var        string
 	 */
@@ -149,6 +161,26 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	public function getLanguageId()
 	{
 		return $this->language_id;
+	}
+
+	/**
+	 * Get the [link_text] column value.
+	 * 
+	 * @return     string
+	 */
+	public function getLinkText()
+	{
+		return $this->link_text;
+	}
+
+	/**
+	 * Get the [page_title] column value.
+	 * 
+	 * @return     string
+	 */
+	public function getPageTitle()
+	{
+		return $this->page_title;
 	}
 
 	/**
@@ -336,6 +368,46 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	} // setLanguageId()
 
 	/**
+	 * Set the value of [link_text] column.
+	 * 
+	 * @param      string $v new value
+	 * @return     SearchIndex The current object (for fluent API support)
+	 */
+	public function setLinkText($v)
+	{
+		if ($v !== null) {
+			$v = (string) $v;
+		}
+
+		if ($this->link_text !== $v) {
+			$this->link_text = $v;
+			$this->modifiedColumns[] = SearchIndexPeer::LINK_TEXT;
+		}
+
+		return $this;
+	} // setLinkText()
+
+	/**
+	 * Set the value of [page_title] column.
+	 * 
+	 * @param      string $v new value
+	 * @return     SearchIndex The current object (for fluent API support)
+	 */
+	public function setPageTitle($v)
+	{
+		if ($v !== null) {
+			$v = (string) $v;
+		}
+
+		if ($this->page_title !== $v) {
+			$this->page_title = $v;
+			$this->modifiedColumns[] = SearchIndexPeer::PAGE_TITLE;
+		}
+
+		return $this;
+	} // setPageTitle()
+
+	/**
 	 * Sets the value of [created_at] column to a normalized version of the date/time value specified.
 	 * 
 	 * @param      mixed $v string, integer (timestamp), or DateTime value.
@@ -463,10 +535,12 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 			$this->page_id = ($row[$startcol + 1] !== null) ? (int) $row[$startcol + 1] : null;
 			$this->path = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
 			$this->language_id = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
-			$this->created_at = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
-			$this->updated_at = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
-			$this->created_by = ($row[$startcol + 6] !== null) ? (int) $row[$startcol + 6] : null;
-			$this->updated_by = ($row[$startcol + 7] !== null) ? (int) $row[$startcol + 7] : null;
+			$this->link_text = ($row[$startcol + 4] !== null) ? (string) $row[$startcol + 4] : null;
+			$this->page_title = ($row[$startcol + 5] !== null) ? (string) $row[$startcol + 5] : null;
+			$this->created_at = ($row[$startcol + 6] !== null) ? (string) $row[$startcol + 6] : null;
+			$this->updated_at = ($row[$startcol + 7] !== null) ? (string) $row[$startcol + 7] : null;
+			$this->created_by = ($row[$startcol + 8] !== null) ? (int) $row[$startcol + 8] : null;
+			$this->updated_by = ($row[$startcol + 9] !== null) ? (int) $row[$startcol + 9] : null;
 			$this->resetModified();
 
 			$this->setNew(false);
@@ -475,7 +549,7 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 				$this->ensureConsistency();
 			}
 
-			return $startcol + 8; // 8 = SearchIndexPeer::NUM_HYDRATE_COLUMNS.
+			return $startcol + 10; // 10 = SearchIndexPeer::NUM_HYDRATE_COLUMNS.
 
 		} catch (Exception $e) {
 			throw new PropelException("Error populating SearchIndex object", $e);
@@ -928,15 +1002,21 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 				return $this->getLanguageId();
 				break;
 			case 4:
-				return $this->getCreatedAt();
+				return $this->getLinkText();
 				break;
 			case 5:
-				return $this->getUpdatedAt();
+				return $this->getPageTitle();
 				break;
 			case 6:
-				return $this->getCreatedBy();
+				return $this->getCreatedAt();
 				break;
 			case 7:
+				return $this->getUpdatedAt();
+				break;
+			case 8:
+				return $this->getCreatedBy();
+				break;
+			case 9:
 				return $this->getUpdatedBy();
 				break;
 			default:
@@ -972,10 +1052,12 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 			$keys[1] => $this->getPageId(),
 			$keys[2] => $this->getPath(),
 			$keys[3] => $this->getLanguageId(),
-			$keys[4] => $this->getCreatedAt(),
-			$keys[5] => $this->getUpdatedAt(),
-			$keys[6] => $this->getCreatedBy(),
-			$keys[7] => $this->getUpdatedBy(),
+			$keys[4] => $this->getLinkText(),
+			$keys[5] => $this->getPageTitle(),
+			$keys[6] => $this->getCreatedAt(),
+			$keys[7] => $this->getUpdatedAt(),
+			$keys[8] => $this->getCreatedBy(),
+			$keys[9] => $this->getUpdatedBy(),
 		);
 		if ($includeForeignObjects) {
 			if (null !== $this->aPage) {
@@ -1037,15 +1119,21 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 				$this->setLanguageId($value);
 				break;
 			case 4:
-				$this->setCreatedAt($value);
+				$this->setLinkText($value);
 				break;
 			case 5:
-				$this->setUpdatedAt($value);
+				$this->setPageTitle($value);
 				break;
 			case 6:
-				$this->setCreatedBy($value);
+				$this->setCreatedAt($value);
 				break;
 			case 7:
+				$this->setUpdatedAt($value);
+				break;
+			case 8:
+				$this->setCreatedBy($value);
+				break;
+			case 9:
 				$this->setUpdatedBy($value);
 				break;
 		} // switch()
@@ -1076,10 +1164,12 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		if (array_key_exists($keys[1], $arr)) $this->setPageId($arr[$keys[1]]);
 		if (array_key_exists($keys[2], $arr)) $this->setPath($arr[$keys[2]]);
 		if (array_key_exists($keys[3], $arr)) $this->setLanguageId($arr[$keys[3]]);
-		if (array_key_exists($keys[4], $arr)) $this->setCreatedAt($arr[$keys[4]]);
-		if (array_key_exists($keys[5], $arr)) $this->setUpdatedAt($arr[$keys[5]]);
-		if (array_key_exists($keys[6], $arr)) $this->setCreatedBy($arr[$keys[6]]);
-		if (array_key_exists($keys[7], $arr)) $this->setUpdatedBy($arr[$keys[7]]);
+		if (array_key_exists($keys[4], $arr)) $this->setLinkText($arr[$keys[4]]);
+		if (array_key_exists($keys[5], $arr)) $this->setPageTitle($arr[$keys[5]]);
+		if (array_key_exists($keys[6], $arr)) $this->setCreatedAt($arr[$keys[6]]);
+		if (array_key_exists($keys[7], $arr)) $this->setUpdatedAt($arr[$keys[7]]);
+		if (array_key_exists($keys[8], $arr)) $this->setCreatedBy($arr[$keys[8]]);
+		if (array_key_exists($keys[9], $arr)) $this->setUpdatedBy($arr[$keys[9]]);
 	}
 
 	/**
@@ -1095,6 +1185,8 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		if ($this->isColumnModified(SearchIndexPeer::PAGE_ID)) $criteria->add(SearchIndexPeer::PAGE_ID, $this->page_id);
 		if ($this->isColumnModified(SearchIndexPeer::PATH)) $criteria->add(SearchIndexPeer::PATH, $this->path);
 		if ($this->isColumnModified(SearchIndexPeer::LANGUAGE_ID)) $criteria->add(SearchIndexPeer::LANGUAGE_ID, $this->language_id);
+		if ($this->isColumnModified(SearchIndexPeer::LINK_TEXT)) $criteria->add(SearchIndexPeer::LINK_TEXT, $this->link_text);
+		if ($this->isColumnModified(SearchIndexPeer::PAGE_TITLE)) $criteria->add(SearchIndexPeer::PAGE_TITLE, $this->page_title);
 		if ($this->isColumnModified(SearchIndexPeer::CREATED_AT)) $criteria->add(SearchIndexPeer::CREATED_AT, $this->created_at);
 		if ($this->isColumnModified(SearchIndexPeer::UPDATED_AT)) $criteria->add(SearchIndexPeer::UPDATED_AT, $this->updated_at);
 		if ($this->isColumnModified(SearchIndexPeer::CREATED_BY)) $criteria->add(SearchIndexPeer::CREATED_BY, $this->created_by);
@@ -1171,6 +1263,8 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		$copyObj->setPageId($this->getPageId());
 		$copyObj->setPath($this->getPath());
 		$copyObj->setLanguageId($this->getLanguageId());
+		$copyObj->setLinkText($this->getLinkText());
+		$copyObj->setPageTitle($this->getPageTitle());
 		$copyObj->setCreatedAt($this->getCreatedAt());
 		$copyObj->setUpdatedAt($this->getUpdatedAt());
 		$copyObj->setCreatedBy($this->getCreatedBy());
@@ -1620,6 +1714,8 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		$this->page_id = null;
 		$this->path = null;
 		$this->language_id = null;
+		$this->link_text = null;
+		$this->page_title = null;
 		$this->created_at = null;
 		$this->updated_at = null;
 		$this->created_by = null;

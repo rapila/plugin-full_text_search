@@ -10,6 +10,8 @@
  * @method     SearchIndexQuery orderByPageId($order = Criteria::ASC) Order by the page_id column
  * @method     SearchIndexQuery orderByPath($order = Criteria::ASC) Order by the path column
  * @method     SearchIndexQuery orderByLanguageId($order = Criteria::ASC) Order by the language_id column
+ * @method     SearchIndexQuery orderByLinkText($order = Criteria::ASC) Order by the link_text column
+ * @method     SearchIndexQuery orderByPageTitle($order = Criteria::ASC) Order by the page_title column
  * @method     SearchIndexQuery orderByCreatedAt($order = Criteria::ASC) Order by the created_at column
  * @method     SearchIndexQuery orderByUpdatedAt($order = Criteria::ASC) Order by the updated_at column
  * @method     SearchIndexQuery orderByCreatedBy($order = Criteria::ASC) Order by the created_by column
@@ -19,6 +21,8 @@
  * @method     SearchIndexQuery groupByPageId() Group by the page_id column
  * @method     SearchIndexQuery groupByPath() Group by the path column
  * @method     SearchIndexQuery groupByLanguageId() Group by the language_id column
+ * @method     SearchIndexQuery groupByLinkText() Group by the link_text column
+ * @method     SearchIndexQuery groupByPageTitle() Group by the page_title column
  * @method     SearchIndexQuery groupByCreatedAt() Group by the created_at column
  * @method     SearchIndexQuery groupByUpdatedAt() Group by the updated_at column
  * @method     SearchIndexQuery groupByCreatedBy() Group by the created_by column
@@ -55,6 +59,8 @@
  * @method     SearchIndex findOneByPageId(int $page_id) Return the first SearchIndex filtered by the page_id column
  * @method     SearchIndex findOneByPath(string $path) Return the first SearchIndex filtered by the path column
  * @method     SearchIndex findOneByLanguageId(string $language_id) Return the first SearchIndex filtered by the language_id column
+ * @method     SearchIndex findOneByLinkText(string $link_text) Return the first SearchIndex filtered by the link_text column
+ * @method     SearchIndex findOneByPageTitle(string $page_title) Return the first SearchIndex filtered by the page_title column
  * @method     SearchIndex findOneByCreatedAt(string $created_at) Return the first SearchIndex filtered by the created_at column
  * @method     SearchIndex findOneByUpdatedAt(string $updated_at) Return the first SearchIndex filtered by the updated_at column
  * @method     SearchIndex findOneByCreatedBy(int $created_by) Return the first SearchIndex filtered by the created_by column
@@ -64,6 +70,8 @@
  * @method     array findByPageId(int $page_id) Return SearchIndex objects filtered by the page_id column
  * @method     array findByPath(string $path) Return SearchIndex objects filtered by the path column
  * @method     array findByLanguageId(string $language_id) Return SearchIndex objects filtered by the language_id column
+ * @method     array findByLinkText(string $link_text) Return SearchIndex objects filtered by the link_text column
+ * @method     array findByPageTitle(string $page_title) Return SearchIndex objects filtered by the page_title column
  * @method     array findByCreatedAt(string $created_at) Return SearchIndex objects filtered by the created_at column
  * @method     array findByUpdatedAt(string $updated_at) Return SearchIndex objects filtered by the updated_at column
  * @method     array findByCreatedBy(int $created_by) Return SearchIndex objects filtered by the created_by column
@@ -311,6 +319,62 @@ abstract class BaseSearchIndexQuery extends ModelCriteria
             }
         }
         return $this->addUsingAlias(SearchIndexPeer::LANGUAGE_ID, $languageId, $comparison);
+    }
+
+    /**
+     * Filter the query on the link_text column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByLinkText('fooValue');   // WHERE link_text = 'fooValue'
+     * $query->filterByLinkText('%fooValue%'); // WHERE link_text LIKE '%fooValue%'
+     * </code>
+     *
+     * @param     string $linkText The value to use as filter.
+     *              Accepts wildcards (* and % trigger a LIKE)
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return    SearchIndexQuery The current query, for fluid interface
+     */
+    public function filterByLinkText($linkText = null, $comparison = null)
+    {
+        if (null === $comparison) {
+            if (is_array($linkText)) {
+                $comparison = Criteria::IN;
+            } elseif (preg_match('/[\%\*]/', $linkText)) {
+                $linkText = str_replace('*', '%', $linkText);
+                $comparison = Criteria::LIKE;
+            }
+        }
+        return $this->addUsingAlias(SearchIndexPeer::LINK_TEXT, $linkText, $comparison);
+    }
+
+    /**
+     * Filter the query on the page_title column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByPageTitle('fooValue');   // WHERE page_title = 'fooValue'
+     * $query->filterByPageTitle('%fooValue%'); // WHERE page_title LIKE '%fooValue%'
+     * </code>
+     *
+     * @param     string $pageTitle The value to use as filter.
+     *              Accepts wildcards (* and % trigger a LIKE)
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return    SearchIndexQuery The current query, for fluid interface
+     */
+    public function filterByPageTitle($pageTitle = null, $comparison = null)
+    {
+        if (null === $comparison) {
+            if (is_array($pageTitle)) {
+                $comparison = Criteria::IN;
+            } elseif (preg_match('/[\%\*]/', $pageTitle)) {
+                $pageTitle = str_replace('*', '%', $pageTitle);
+                $comparison = Criteria::LIKE;
+            }
+        }
+        return $this->addUsingAlias(SearchIndexPeer::PAGE_TITLE, $pageTitle, $comparison);
     }
 
     /**

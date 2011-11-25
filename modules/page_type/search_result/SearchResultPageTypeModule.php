@@ -10,6 +10,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 	
 	public function display(Template $oTemplate, $bIsPreview = false) {
 		$sTemplateName = $this->oPage->getTemplateNameUsed();
+		$sLanguageId = Session::language();
 
 		$oListTemplate = null;
 		$oItemTemplatePrototype = null;
@@ -21,15 +22,43 @@ class SearchResultPageTypeModule extends PageTypeModule {
 			$oItemTemplatePrototype = new Template("search_results/default_item");
 		}
 
+		$aResults = array();
+		
 		$sWords = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
-		$aWords = StringUtil::getWords($sWords);
-		$oSearchWordQuery = SearchIndexWordQuery::create();
-		foreach($aWords as $sWord) {
-			$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, $sWord);
+		if($sWords) {
+			$aWords = StringUtil::getWords($sWords);
+			$oSearchWordQuery = SearchIndexWordQuery::create();
+			foreach($aWords as $sWord) {
+				$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, Synonyms::rootFor($sWord));
+			}
+			$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
+		
+			foreach($oSearchWordQuery->find() as $oSearchIndexWord) {
+				$iId = $oSearchIndexWord->getSearchIndexId();
+				if(isset($aResults[$iId])) {
+					$aResults[$iId] += $oSearchIndexWord->getCount();
+				} else {
+					$aResults[$iId] = $oSearchIndexWord->getCount();
+				}
+			}
+			arsort($aResults);
 		}
-		$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
-	
-		Util::dumpAll($oSearchWordQuery->find()->toArray());
+
+		if(count($aResults) === 0) {
+			$oListTemplate->replaceIdentifier('no_results', StringPeer::getString('wns.search.no_results', null, null, array('search_string' => $sWords)));
+		}
+
+		foreach($aResults as $iIndexId => $iCount) {
+			$oIndex = SearchIndexQuery::create()->findPk(array($iIndexId, $sLanguageId));
+			ErrorHandler::log($iIndexId);
+			if(!$oIndex || !$oIndex->getPage()) {
+				continue;
+			}
+			$oItemTemplate = clone $oItemTemplatePrototype;
+			$oIndex->renderListItem($oItemTemplate);
+			$oItemTemplate->replaceIdentifier('count', $iCount);
+			$oListTemplate->replaceIdentifierMultiple('items', $oItemTemplate);
+		}
 		
 		$oTemplate->replaceIdentifier('search_results', $oListTemplate);
 	}

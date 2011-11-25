@@ -37,7 +37,7 @@ class UpdateSearchIndexFileModule extends FileModule {
 			$this->index($aPath);
 			set_time_limit(30);
 			gc_collect_cycles();
-			print "Indexed ".implode('/', $aPath)."\n";
+			print "Indexed <code>/".htmlentities(implode('/', $aPath))."</code><br>\n";
 		}
 		PreviewManager::revertTemporaryManager();
 	}
@@ -66,24 +66,43 @@ class UpdateSearchIndexFileModule extends FileModule {
 			$oPageNavigationItem = $oPageNavigationItem->getParent();
 		}
 		FrontendManager::$CURRENT_PAGE = $oPageNavigationItem->getMe();
+		$oPage = FrontendManager::$CURRENT_PAGE;
 		$bIsNotFound = false;
-		FilterModule::getFilters()->handlePageHasBeenSet(FrontendManager::$CURRENT_PAGE, $bIsNotFound, FrontendManager::$CURRENT_NAVIGATION_ITEM);
+		FilterModule::getFilters()->handlePageHasBeenSet($oPage, $bIsNotFound, $oNavigationItem);
 		FilterModule::getFilters()->handleRequestStarted();
-		FilterModule::getFilters()->handlePageNotFoundDetectionComplete($bIsNotFound, FrontendManager::$CURRENT_PAGE, FrontendManager::$CURRENT_NAVIGATION_ITEM, array(&$bIsNotFound));
+		FilterModule::getFilters()->handlePageNotFoundDetectionComplete($bIsNotFound, $oPage, $oNavigationItem, array(&$bIsNotFound));
 		if($bIsNotFound) {
 			return;
 		}
-		$oPageType = PageTypeModule::getModuleInstance(FrontendManager::$CURRENT_PAGE->getPageType(), FrontendManager::$CURRENT_PAGE, FrontendManager::$CURRENT_NAVIGATION_ITEM);
-		$aWords = $oPageType->getWords();
-		$aWords = array_merge($aWords, StringUtil::getWords(FrontendManager::$CURRENT_PAGE->getDescription($this->sLanguageId)), FrontendManager::$CURRENT_PAGE->getConsolidatedKeywords($this->sLanguageId, true));
 		
-		$aPagePath = FrontendManager::$CURRENT_PAGE->getLink();
-		$aNavigationItemPath = FrontendManager::$CURRENT_NAVIGATION_ITEM->getLink();
+		$sDescription = $oNavigationItem->getDescription($this->sLanguageId);
+		if($sDescription === null) {
+			$sDescription = $oPage->getDescription($this->sLanguageId);
+		}
+		$aKeywords = array();
+		foreach($oPage->getConsolidatedKeywords($this->sLanguageId, true) as $sKeyword) {
+			$aKeywords = array_merge($aKeywords, StringUtil::getWords($sKeyword));
+		}
+		$sTitle = $oNavigationItem->getTitle($this->sLanguageId);
+		$sLinkText = $oNavigationItem->getLinkText($this->sLanguageId);
+		if(!$sLinkText) {
+			$sLinkText = $sTitle;
+		}
+		$sName = $oNavigationItem->getName();
+		
+		$oPageType = PageTypeModule::getModuleInstance($oPage->getPageType(), $oPage, $oNavigationItem);
+		$aWords = $oPageType->getWords();
+		$aWords = array_merge($aWords, StringUtil::getWords($sDescription), $aKeywords, StringUtil::getWords($sTitle), StringUtil::getWords($sLinkText), array($sName));
+		
+		$aPagePath = $oPage->getLink();
+		$aNavigationItemPath = $oNavigationItem->getLink();
 		$sPath = implode('/', array_diff($aNavigationItemPath, $aPagePath));
 		
 		$oSearchIndex = new SearchIndex();
-		$oSearchIndex->setPageId(FrontendManager::$CURRENT_PAGE->getId());
+		$oSearchIndex->setPageId($oPage->getId());
 		$oSearchIndex->setPath($sPath);
+		$oSearchIndex->setLinkText($sLinkText);
+		$oSearchIndex->setPageTitle($sTitle);
 		$oSearchIndex->setLanguageId($this->sLanguageId);
 		$oSearchIndex->save();
 		

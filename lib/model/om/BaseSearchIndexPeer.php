@@ -26,13 +26,13 @@ abstract class BaseSearchIndexPeer {
 	const TM_CLASS = 'SearchIndexTableMap';
 
 	/** The total number of columns. */
-	const NUM_COLUMNS = 8;
+	const NUM_COLUMNS = 10;
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = 0;
 
 	/** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-	const NUM_HYDRATE_COLUMNS = 8;
+	const NUM_HYDRATE_COLUMNS = 10;
 
 	/** the column name for the ID field */
 	const ID = 'search_index.ID';
@@ -45,6 +45,12 @@ abstract class BaseSearchIndexPeer {
 
 	/** the column name for the LANGUAGE_ID field */
 	const LANGUAGE_ID = 'search_index.LANGUAGE_ID';
+
+	/** the column name for the LINK_TEXT field */
+	const LINK_TEXT = 'search_index.LINK_TEXT';
+
+	/** the column name for the PAGE_TITLE field */
+	const PAGE_TITLE = 'search_index.PAGE_TITLE';
 
 	/** the column name for the CREATED_AT field */
 	const CREATED_AT = 'search_index.CREATED_AT';
@@ -79,12 +85,12 @@ abstract class BaseSearchIndexPeer {
 	 * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	protected static $fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array ('Id', 'PageId', 'Path', 'LanguageId', 'CreatedAt', 'UpdatedAt', 'CreatedBy', 'UpdatedBy', ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'pageId', 'path', 'languageId', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy', ),
-		BasePeer::TYPE_COLNAME => array (self::ID, self::PAGE_ID, self::PATH, self::LANGUAGE_ID, self::CREATED_AT, self::UPDATED_AT, self::CREATED_BY, self::UPDATED_BY, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('ID', 'PAGE_ID', 'PATH', 'LANGUAGE_ID', 'CREATED_AT', 'UPDATED_AT', 'CREATED_BY', 'UPDATED_BY', ),
-		BasePeer::TYPE_FIELDNAME => array ('id', 'page_id', 'path', 'language_id', 'created_at', 'updated_at', 'created_by', 'updated_by', ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+		BasePeer::TYPE_PHPNAME => array ('Id', 'PageId', 'Path', 'LanguageId', 'LinkText', 'PageTitle', 'CreatedAt', 'UpdatedAt', 'CreatedBy', 'UpdatedBy', ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'pageId', 'path', 'languageId', 'linkText', 'pageTitle', 'createdAt', 'updatedAt', 'createdBy', 'updatedBy', ),
+		BasePeer::TYPE_COLNAME => array (self::ID, self::PAGE_ID, self::PATH, self::LANGUAGE_ID, self::LINK_TEXT, self::PAGE_TITLE, self::CREATED_AT, self::UPDATED_AT, self::CREATED_BY, self::UPDATED_BY, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('ID', 'PAGE_ID', 'PATH', 'LANGUAGE_ID', 'LINK_TEXT', 'PAGE_TITLE', 'CREATED_AT', 'UPDATED_AT', 'CREATED_BY', 'UPDATED_BY', ),
+		BasePeer::TYPE_FIELDNAME => array ('id', 'page_id', 'path', 'language_id', 'link_text', 'page_title', 'created_at', 'updated_at', 'created_by', 'updated_by', ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, )
 	);
 
 	/**
@@ -94,12 +100,12 @@ abstract class BaseSearchIndexPeer {
 	 * e.g. self::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	protected static $fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'PageId' => 1, 'Path' => 2, 'LanguageId' => 3, 'CreatedAt' => 4, 'UpdatedAt' => 5, 'CreatedBy' => 6, 'UpdatedBy' => 7, ),
-		BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'pageId' => 1, 'path' => 2, 'languageId' => 3, 'createdAt' => 4, 'updatedAt' => 5, 'createdBy' => 6, 'updatedBy' => 7, ),
-		BasePeer::TYPE_COLNAME => array (self::ID => 0, self::PAGE_ID => 1, self::PATH => 2, self::LANGUAGE_ID => 3, self::CREATED_AT => 4, self::UPDATED_AT => 5, self::CREATED_BY => 6, self::UPDATED_BY => 7, ),
-		BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'PAGE_ID' => 1, 'PATH' => 2, 'LANGUAGE_ID' => 3, 'CREATED_AT' => 4, 'UPDATED_AT' => 5, 'CREATED_BY' => 6, 'UPDATED_BY' => 7, ),
-		BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'page_id' => 1, 'path' => 2, 'language_id' => 3, 'created_at' => 4, 'updated_at' => 5, 'created_by' => 6, 'updated_by' => 7, ),
-		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, )
+		BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'PageId' => 1, 'Path' => 2, 'LanguageId' => 3, 'LinkText' => 4, 'PageTitle' => 5, 'CreatedAt' => 6, 'UpdatedAt' => 7, 'CreatedBy' => 8, 'UpdatedBy' => 9, ),
+		BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'pageId' => 1, 'path' => 2, 'languageId' => 3, 'linkText' => 4, 'pageTitle' => 5, 'createdAt' => 6, 'updatedAt' => 7, 'createdBy' => 8, 'updatedBy' => 9, ),
+		BasePeer::TYPE_COLNAME => array (self::ID => 0, self::PAGE_ID => 1, self::PATH => 2, self::LANGUAGE_ID => 3, self::LINK_TEXT => 4, self::PAGE_TITLE => 5, self::CREATED_AT => 6, self::UPDATED_AT => 7, self::CREATED_BY => 8, self::UPDATED_BY => 9, ),
+		BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'PAGE_ID' => 1, 'PATH' => 2, 'LANGUAGE_ID' => 3, 'LINK_TEXT' => 4, 'PAGE_TITLE' => 5, 'CREATED_AT' => 6, 'UPDATED_AT' => 7, 'CREATED_BY' => 8, 'UPDATED_BY' => 9, ),
+		BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'page_id' => 1, 'path' => 2, 'language_id' => 3, 'link_text' => 4, 'page_title' => 5, 'created_at' => 6, 'updated_at' => 7, 'created_by' => 8, 'updated_by' => 9, ),
+		BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, )
 	);
 
 	/**
@@ -175,6 +181,8 @@ abstract class BaseSearchIndexPeer {
 			$criteria->addSelectColumn(SearchIndexPeer::PAGE_ID);
 			$criteria->addSelectColumn(SearchIndexPeer::PATH);
 			$criteria->addSelectColumn(SearchIndexPeer::LANGUAGE_ID);
+			$criteria->addSelectColumn(SearchIndexPeer::LINK_TEXT);
+			$criteria->addSelectColumn(SearchIndexPeer::PAGE_TITLE);
 			$criteria->addSelectColumn(SearchIndexPeer::CREATED_AT);
 			$criteria->addSelectColumn(SearchIndexPeer::UPDATED_AT);
 			$criteria->addSelectColumn(SearchIndexPeer::CREATED_BY);
@@ -184,6 +192,8 @@ abstract class BaseSearchIndexPeer {
 			$criteria->addSelectColumn($alias . '.PAGE_ID');
 			$criteria->addSelectColumn($alias . '.PATH');
 			$criteria->addSelectColumn($alias . '.LANGUAGE_ID');
+			$criteria->addSelectColumn($alias . '.LINK_TEXT');
+			$criteria->addSelectColumn($alias . '.PAGE_TITLE');
 			$criteria->addSelectColumn($alias . '.CREATED_AT');
 			$criteria->addSelectColumn($alias . '.UPDATED_AT');
 			$criteria->addSelectColumn($alias . '.CREATED_BY');

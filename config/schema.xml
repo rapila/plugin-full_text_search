@@ -17,6 +17,8 @@
 	<behavior name="denyable">
 		<parameter name="mode" value="allow" />
 	</behavior>
+	<column name="link_text" type="varchar" size="50" required="true" />
+	<column name="page_title" type="varchar" size="255" required="true" />
 </table>
 
 <table name="search_index_words" phpName="SearchIndexWord">

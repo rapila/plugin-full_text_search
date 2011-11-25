@@ -42,6 +42,8 @@ class SearchIndexTableMap extends TableMap
 		$this->addForeignKey('PAGE_ID', 'PageId', 'INTEGER', 'pages', 'ID', true, null, null);
 		$this->addColumn('PATH', 'Path', 'VARCHAR', true, 256, null);
 		$this->addForeignPrimaryKey('LANGUAGE_ID', 'LanguageId', 'VARCHAR' , 'languages', 'ID', true, 3, null);
+		$this->addColumn('LINK_TEXT', 'LinkText', 'VARCHAR', true, 50, null);
+		$this->addColumn('PAGE_TITLE', 'PageTitle', 'VARCHAR', true, 255, null);
 		$this->addColumn('CREATED_AT', 'CreatedAt', 'TIMESTAMP', false, null, null);
 		$this->addColumn('UPDATED_AT', 'UpdatedAt', 'TIMESTAMP', false, null, null);
 		$this->addForeignKey('CREATED_BY', 'CreatedBy', 'INTEGER', 'users', 'ID', false, null, null);
