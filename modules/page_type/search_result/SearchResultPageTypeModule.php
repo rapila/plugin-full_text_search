@@ -26,10 +26,15 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		
 		$sWords = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
 		if($sWords) {
-			$aWords = StringUtil::getWords($sWords);
+			$aWords = StringUtil::getWords($sWords, false, '%');
 			$oSearchWordQuery = SearchIndexWordQuery::create();
 			foreach($aWords as $sWord) {
-				$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, Synonyms::rootFor($sWord));
+				$sWord = Synonyms::rootFor($sWord);
+				$sComparison = Criteria::EQUAL;
+				if (strpos($sWord, '%') !== false) {
+						$sComparison = Criteria::LIKE;
+				}
+				$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, $sWord, $sComparison);
 			}
 			$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
 		
@@ -44,6 +49,9 @@ class SearchResultPageTypeModule extends PageTypeModule {
 			arsort($aResults);
 		}
 
+		$oListTemplate->replaceIdentifier('count', count($aResults));
+		$oListTemplate->replaceIdentifier('search_string', $sWords);
+		
 		if(count($aResults) === 0) {
 			$oListTemplate->replaceIdentifier('no_results', StringPeer::getString('wns.search.no_results', null, null, array('search_string' => $sWords)));
 		}
