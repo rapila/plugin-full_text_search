@@ -36,10 +36,18 @@ class UpdateSearchIndexFileModule extends FileModule {
 		foreach($this->aIndexPaths as $aPath) {
 			$this->index($aPath);
 			set_time_limit(30);
-			gc_collect_cycles();
+			$this->gc();
 			print "Indexed <code>/".htmlentities(implode('/', $aPath))."</code><br>\n";
 		}
 		PreviewManager::revertTemporaryManager();
+	}
+	
+	private function gc() {
+		LanguageObjectPeer::clearInstancePool();
+		DocumentPeer::clearInstancePool();
+		SearchIndexPeer::clearInstancePool();
+		SearchIndexWordPeer::clearInstancePool();	
+		gc_collect_cycles();
 	}
 	
 	private function spider($oNavigationItem) {
