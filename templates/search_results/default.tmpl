@@ -1,0 +1,18 @@
+<p>{{writeParameterizedString=wns.search_results;search_string=\{\{search_string\}\};count=\{\{count\}\};position=last}}</p>
+{{if=>;1=\{\{count\}\};2=0}}
+<table>
+	<thead>
+	<tr><th>{{writeString=wns.page}}</th><th>{{writeString=writeString=wns.results}}</th></tr>
+	</thead>
+	<tbody>
+		{{items}}
+	</tbody>
+	<tfoot>
+	</tfoot>
+</table>
+{{endIf}}
+{{identifierContext=start;name=no_results}}
+	<em class="info">
+		{{no_results}}
+	</em>
+{{identifierContext=end;name=no_results}}
