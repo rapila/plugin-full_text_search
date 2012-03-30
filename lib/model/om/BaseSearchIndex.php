@@ -25,12 +25,6 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	protected static $peer;
 
 	/**
-	 * The flag var to prevent infinit loop in deep copy
-	 * @var       boolean
-	 */
-	protected $startCopy = false;
-
-	/**
 	 * The value for the id field.
 	 * @var        int
 	 */
@@ -128,12 +122,6 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	 * @var        boolean
 	 */
 	protected $alreadyInValidation = false;
-
-	/**
-	 * An array of objects scheduled for deletion.
-	 * @var		array
-	 */
-	protected $searchIndexWordsScheduledForDeletion = null;
 
 	/**
 	 * Get the [id] column value.
@@ -681,7 +669,7 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 			} else {
 				$con->commit();
 			}
-		} catch (Exception $e) {
+		} catch (PropelException $e) {
 			$con->rollBack();
 			throw $e;
 		}
@@ -772,7 +760,7 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 			}
 			$con->commit();
 			return $affectedRows;
-		} catch (Exception $e) {
+		} catch (PropelException $e) {
 			$con->rollBack();
 			throw $e;
 		}
@@ -828,24 +816,27 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 				$this->setUserRelatedByUpdatedBy($this->aUserRelatedByUpdatedBy);
 			}
 
-			if ($this->isNew() || $this->isModified()) {
-				// persist changes
-				if ($this->isNew()) {
-					$this->doInsert($con);
-				} else {
-					$this->doUpdate($con);
-				}
-				$affectedRows += 1;
-				$this->resetModified();
+			if ($this->isNew() ) {
+				$this->modifiedColumns[] = SearchIndexPeer::ID;
 			}
 
-			if ($this->searchIndexWordsScheduledForDeletion !== null) {
-				if (!$this->searchIndexWordsScheduledForDeletion->isEmpty()) {
-					SearchIndexWordQuery::create()
-						->filterByPrimaryKeys($this->searchIndexWordsScheduledForDeletion->getPrimaryKeys(false))
-						->delete($con);
-					$this->searchIndexWordsScheduledForDeletion = null;
+			// If this object has been modified, then save it to the database.
+			if ($this->isModified()) {
+				if ($this->isNew()) {
+					$criteria = $this->buildCriteria();
+					if ($criteria->keyContainsValue(SearchIndexPeer::ID) ) {
+						throw new PropelException('Cannot insert a value for auto-increment primary key ('.SearchIndexPeer::ID.')');
+					}
+
+					$pk = BasePeer::doInsert($criteria, $con);
+					$affectedRows += 1;
+					$this->setId($pk);  //[IMV] update autoincrement primary key
+					$this->setNew(false);
+				} else {
+					$affectedRows += SearchIndexPeer::doUpdate($this, $con);
 				}
+
+				$this->resetModified(); // [HL] After being saved an object is no longer 'modified'
 			}
 
 			if ($this->collSearchIndexWords !== null) {
@@ -861,128 +852,6 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		}
 		return $affectedRows;
 	} // doSave()
-
-	/**
-	 * Insert the row in the database.
-	 *
-	 * @param      PropelPDO $con
-	 *
-	 * @throws     PropelException
-	 * @see        doSave()
-	 */
-	protected function doInsert(PropelPDO $con)
-	{
-		$modifiedColumns = array();
-		$index = 0;
-
-		$this->modifiedColumns[] = SearchIndexPeer::ID;
-		if (null !== $this->id) {
-			throw new PropelException('Cannot insert a value for auto-increment primary key (' . SearchIndexPeer::ID . ')');
-		}
-
-		 // check the columns in natural order for more readable SQL queries
-		if ($this->isColumnModified(SearchIndexPeer::ID)) {
-			$modifiedColumns[':p' . $index++]  = '`ID`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::PAGE_ID)) {
-			$modifiedColumns[':p' . $index++]  = '`PAGE_ID`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::PATH)) {
-			$modifiedColumns[':p' . $index++]  = '`PATH`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::LANGUAGE_ID)) {
-			$modifiedColumns[':p' . $index++]  = '`LANGUAGE_ID`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::LINK_TEXT)) {
-			$modifiedColumns[':p' . $index++]  = '`LINK_TEXT`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::PAGE_TITLE)) {
-			$modifiedColumns[':p' . $index++]  = '`PAGE_TITLE`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::CREATED_AT)) {
-			$modifiedColumns[':p' . $index++]  = '`CREATED_AT`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::UPDATED_AT)) {
-			$modifiedColumns[':p' . $index++]  = '`UPDATED_AT`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::CREATED_BY)) {
-			$modifiedColumns[':p' . $index++]  = '`CREATED_BY`';
-		}
-		if ($this->isColumnModified(SearchIndexPeer::UPDATED_BY)) {
-			$modifiedColumns[':p' . $index++]  = '`UPDATED_BY`';
-		}
-
-		$sql = sprintf(
-			'INSERT INTO `search_index` (%s) VALUES (%s)',
-			implode(', ', $modifiedColumns),
-			implode(', ', array_keys($modifiedColumns))
-		);
-
-		try {
-			$stmt = $con->prepare($sql);
-			foreach ($modifiedColumns as $identifier => $columnName) {
-				switch ($columnName) {
-					case '`ID`':
-						$stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
-						break;
-					case '`PAGE_ID`':
-						$stmt->bindValue($identifier, $this->page_id, PDO::PARAM_INT);
-						break;
-					case '`PATH`':
-						$stmt->bindValue($identifier, $this->path, PDO::PARAM_STR);
-						break;
-					case '`LANGUAGE_ID`':
-						$stmt->bindValue($identifier, $this->language_id, PDO::PARAM_STR);
-						break;
-					case '`LINK_TEXT`':
-						$stmt->bindValue($identifier, $this->link_text, PDO::PARAM_STR);
-						break;
-					case '`PAGE_TITLE`':
-						$stmt->bindValue($identifier, $this->page_title, PDO::PARAM_STR);
-						break;
-					case '`CREATED_AT`':
-						$stmt->bindValue($identifier, $this->created_at, PDO::PARAM_STR);
-						break;
-					case '`UPDATED_AT`':
-						$stmt->bindValue($identifier, $this->updated_at, PDO::PARAM_STR);
-						break;
-					case '`CREATED_BY`':
-						$stmt->bindValue($identifier, $this->created_by, PDO::PARAM_INT);
-						break;
-					case '`UPDATED_BY`':
-						$stmt->bindValue($identifier, $this->updated_by, PDO::PARAM_INT);
-						break;
-				}
-			}
-			$stmt->execute();
-		} catch (Exception $e) {
-			Propel::log($e->getMessage(), Propel::LOG_ERR);
-			throw new PropelException(sprintf('Unable to execute INSERT statement [%s]', $sql), $e);
-		}
-
-		try {
-			$pk = $con->lastInsertId();
-		} catch (Exception $e) {
-			throw new PropelException('Unable to get autoincrement id.', $e);
-		}
-		$this->setId($pk);
-
-		$this->setNew(false);
-	}
-
-	/**
-	 * Update the row in the database.
-	 *
-	 * @param      PropelPDO $con
-	 *
-	 * @see        doSave()
-	 */
-	protected function doUpdate(PropelPDO $con)
-	{
-		$selectCriteria = $this->buildPkeyCriteria();
-		$valuesCriteria = $this->buildCriteria();
-		BasePeer::doUpdate($selectCriteria, $valuesCriteria, $con);
-	}
 
 	/**
 	 * Array of ValidationFailed objects.
@@ -1401,12 +1270,10 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 		$copyObj->setCreatedBy($this->getCreatedBy());
 		$copyObj->setUpdatedBy($this->getUpdatedBy());
 
-		if ($deepCopy && !$this->startCopy) {
+		if ($deepCopy) {
 			// important: temporarily setNew(false) because this affects the behavior of
 			// the getter/setter methods for fkey referrer objects.
 			$copyObj->setNew(false);
-			// store object hash to prevent cycle
-			$this->startCopy = true;
 
 			foreach ($this->getSearchIndexWords() as $relObj) {
 				if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
@@ -1414,8 +1281,6 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 				}
 			}
 
-			//unflag object copy
-			$this->startCopy = false;
 		} // if ($deepCopy)
 
 		if ($makeNew) {
@@ -1743,30 +1608,6 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 	}
 
 	/**
-	 * Sets a collection of SearchIndexWord objects related by a one-to-many relationship
-	 * to the current object.
-	 * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
-	 * and new objects from the given Propel collection.
-	 *
-	 * @param      PropelCollection $searchIndexWords A Propel collection.
-	 * @param      PropelPDO $con Optional connection object
-	 */
-	public function setSearchIndexWords(PropelCollection $searchIndexWords, PropelPDO $con = null)
-	{
-		$this->searchIndexWordsScheduledForDeletion = $this->getSearchIndexWords(new Criteria(), $con)->diff($searchIndexWords);
-
-		foreach ($searchIndexWords as $searchIndexWord) {
-			// Fix issue with collection modified by reference
-			if ($searchIndexWord->isNew()) {
-				$searchIndexWord->setSearchIndex($this);
-			}
-			$this->addSearchIndexWord($searchIndexWord);
-		}
-
-		$this->collSearchIndexWords = $searchIndexWords;
-	}
-
-	/**
 	 * Returns the number of related SearchIndexWord objects.
 	 *
 	 * @param      Criteria $criteria
@@ -1807,19 +1648,11 @@ abstract class BaseSearchIndex extends BaseObject  implements Persistent
 			$this->initSearchIndexWords();
 		}
 		if (!$this->collSearchIndexWords->contains($l)) { // only add it if the **same** object is not already associated
-			$this->doAddSearchIndexWord($l);
+			$this->collSearchIndexWords[]= $l;
+			$l->setSearchIndex($this);
 		}
 
 		return $this;
-	}
-
-	/**
-	 * @param	SearchIndexWord $searchIndexWord The searchIndexWord object to add.
-	 */
-	protected function doAddSearchIndexWord($searchIndexWord)
-	{
-		$this->collSearchIndexWords[]= $searchIndexWord;
-		$searchIndexWord->setSearchIndex($this);
 	}
 
 
