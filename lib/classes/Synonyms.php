@@ -42,10 +42,10 @@ class Synonyms {
 		if($sLanguageId === null) {
 			$sLanguageId = Session::language();
 		}
-		if(isset(self::$SYNONYMS[$sLanguageId])) {
-			return self::$SYNONYMS[$sLanguageId];
+		if(!isset(self::$SYNONYMS[$sLanguageId])) {
+			self::$SYNONYMS[$sLanguageId] = array();
 		}
-		return array();
+		return self::$SYNONYMS[$sLanguageId];
 	}
 	
 	private static function &rootWords($sLanguageId = null) {
@@ -53,10 +53,10 @@ class Synonyms {
 		if($sLanguageId === null) {
 			$sLanguageId = Session::language();
 		}
-		if(isset(self::$ROOT_WORDS[$sLanguageId])) {
-			return self::$ROOT_WORDS[$sLanguageId];
+		if(!isset(self::$ROOT_WORDS[$sLanguageId])) {
+			self::$ROOT_WORDS[$sLanguageId] = array();
 		}
-		return array();
+		return self::$ROOT_WORDS[$sLanguageId];
 	}
 	
 }

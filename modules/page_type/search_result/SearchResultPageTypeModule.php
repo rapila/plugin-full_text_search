@@ -48,7 +48,6 @@ class SearchResultPageTypeModule extends PageTypeModule {
 			}
 			arsort($aResults);
 		}
-
 		$oListTemplate->replaceIdentifier('count', count($aResults));
 		$oListTemplate->replaceIdentifier('search_string', $sWords);
 		
