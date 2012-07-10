@@ -3,7 +3,6 @@
 	* @package modules.page_type
 	*/
 class SearchResultPageTypeModule extends PageTypeModule {
-			
 	public function __construct(Page $oPage = null, NavigationItem $oNavigationItem = null) {
 		parent::__construct($oPage, $oNavigationItem);
 	}
