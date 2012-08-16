@@ -1,5 +1,6 @@
 <?php
 class SearchFilterModule extends FilterModule {
+	
 	public function onFillPageAttributes($oCurrentPage, $oTemplate) {
 		$oSearchPage = $oCurrentPage->getPageOfType('search_result');
 		if($oSearchPage === null) {

@@ -1,7 +1,10 @@
 <?php
 class UpdateSearchIndexFileModule extends FileModule {
+	
 	private $aIndexPaths;
+	
 	private $sLanguageId;
+	
 	private $oRootNavigationItem;
 	
 	public function __construct($aRequestPath) {
