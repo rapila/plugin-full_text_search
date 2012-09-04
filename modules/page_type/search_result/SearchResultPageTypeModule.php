@@ -67,6 +67,10 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		
 		$oTemplate->replaceIdentifier('search_results', $oListTemplate);
 	}
+
+	public function getWords() {
+		return array();
+	}
 			 
 	public function setIsDynamicAndAllowedParameterPointers(&$bIsDynamic, &$aAllowedParams, $aModulesToCheck = null) {
 		$bIsDynamic = true;
