@@ -1446,14 +1446,13 @@ abstract class BaseSearchIndexWord extends BaseObject  implements Persistent
 		if($oUser === false) {
 			$oUser = Session::getSession()->getUser();
 		}
-		if($oUser && ($this->isNew() || $this->getCreatedBy() === $oUser->getId()) && SearchIndexWordPeer::mayOperateOnOwn($oUser, $this, $sOperation)) {
-			return true;
-		}
-		if(SearchIndexWordPeer::mayOperateOn($oUser, $this, $sOperation)) {
-			return true;
-		}
 		$bIsAllowed = false;
-		FilterModule::getFilters()->handleOperationIsDenied($sOperation, $this, $oUser, array(&$bIsAllowed));
+		if($oUser && ($this->isNew() || $this->getCreatedBy() === $oUser->getId()) && SearchIndexWordPeer::mayOperateOnOwn($oUser, $this, $sOperation)) {
+			$bIsAllowed = true;
+		} else if(SearchIndexWordPeer::mayOperateOn($oUser, $this, $sOperation)) {
+			$bIsAllowed = true;
+		}
+		FilterModule::getFilters()->handleSearchIndexWordOperationCheck($sOperation, $this, $oUser, array(&$bIsAllowed));
 		return $bIsAllowed;
 	}
 	public function mayBeInserted($oUser = false) {
