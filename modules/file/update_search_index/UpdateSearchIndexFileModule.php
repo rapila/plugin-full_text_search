@@ -43,10 +43,11 @@ class UpdateSearchIndexFileModule extends FileModule {
 		//Update index
 		PreviewManager::setTemporaryManager('FrontendManager');
 		foreach($this->aIndexPaths as $aPath) {
-			$this->index($aPath);
+			$bIsIndexed = $this->index($aPath);
 			set_time_limit(30);
 			$this->gc();
-			print "Indexed <code>/".htmlentities(implode('/', $aPath))."</code><br>\n";
+			$sMessage = $bIsIndexed ? 'Indexed' : 'Skipped';
+			print "$sMessage <code>/".htmlentities(implode('/', $aPath))."</code><br>\n";
 		}
 		PreviewManager::revertTemporaryManager();
 	}
@@ -89,7 +90,7 @@ class UpdateSearchIndexFileModule extends FileModule {
 		FilterModule::getFilters()->handleRequestStarted();
 		FilterModule::getFilters()->handlePageNotFoundDetectionComplete($bIsNotFound, $oPage, $oNavigationItem, array(&$bIsNotFound));
 		if($bIsNotFound) {
-			return;
+			return false;
 		}
 
 		$sDescription = $oNavigationItem->getDescription($this->sLanguageId);
@@ -106,6 +107,11 @@ class UpdateSearchIndexFileModule extends FileModule {
 			$sLinkText = $sTitle;
 		}
 		$sName = $oNavigationItem->getName();
+
+		// Page type can prevent indexing
+		if(!self::doIndex($oPage->getPageType())) {
+			return false;
+		}
 
 		$oPageType = PageTypeModule::getModuleInstance($oPage->getPageType(), $oPage, $oNavigationItem);
 		$aWords = $oPageType->getWords();
@@ -135,5 +141,14 @@ class UpdateSearchIndexFileModule extends FileModule {
 			}
 			$oSearchIndexWord->save();
 		}
+		return true;
+	}
+
+	public static function doIndex($sPageType) {
+		$sPageType = StringUtil::camelize($sPageType.'_page_type_module', true);
+		if(method_exists($sPageType, 'doIndex') && $sPageType::doIndex() === false) {
+			return false;
+		}
+		return true;
 	}
 }
