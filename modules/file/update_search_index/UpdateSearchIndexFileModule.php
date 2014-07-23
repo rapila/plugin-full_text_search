@@ -109,7 +109,7 @@ class UpdateSearchIndexFileModule extends FileModule {
 		$sName = $oNavigationItem->getName();
 
 		// Page type can prevent indexing
-		if(!self::doIndex($oPage->getPageType())) {
+		if(!self::doIndex($oPage->getPageType(), $oNavigationItem)) {
 			return false;
 		}
 
@@ -144,9 +144,9 @@ class UpdateSearchIndexFileModule extends FileModule {
 		return true;
 	}
 
-	public static function doIndex($sPageType) {
+	public static function doIndex($sPageType, NavigationItem $oNavigationItem) {
 		$sPageType = StringUtil::camelize($sPageType.'_page_type_module', true);
-		if(method_exists($sPageType, 'doIndex') && $sPageType::doIndex() === false) {
+		if(method_exists($sPageType, 'doIndex') && $sPageType::doIndex($oNavigationItem) === false) {
 			return false;
 		}
 		return true;
