@@ -6,7 +6,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 	public function __construct(Page $oPage = null, NavigationItem $oNavigationItem = null) {
 		parent::__construct($oPage, $oNavigationItem);
 	}
-	
+
 	public function display(Template $oTemplate, $bIsPreview = false) {
 		$sTemplateName = $this->oPage->getTemplateNameUsed();
 		$sLanguageId = Session::language();
@@ -22,7 +22,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		}
 
 		$aResults = array();
-		
+
 		$sWords = isset($_REQUEST['q']) ? $_REQUEST['q'] : '';
 		if($sWords) {
 			$aWords = StringUtil::getWords($sWords, false, '%');
@@ -36,7 +36,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 				$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, $sWord, $sComparison);
 			}
 			$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
-		
+
 			foreach($oSearchWordQuery->find() as $oSearchIndexWord) {
 				$iId = $oSearchIndexWord->getSearchIndexId();
 				if(isset($aResults[$iId])) {
@@ -49,7 +49,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		}
 		$oListTemplate->replaceIdentifier('count', count($aResults));
 		$oListTemplate->replaceIdentifier('search_string', $sWords);
-		
+
 		if(count($aResults) === 0) {
 			$oListTemplate->replaceIdentifier('no_results', StringPeer::getString('wns.search.no_results', null, null, array('search_string' => $sWords)));
 		}
@@ -64,17 +64,16 @@ class SearchResultPageTypeModule extends PageTypeModule {
 			$oItemTemplate->replaceIdentifier('count', $iCount);
 			$oListTemplate->replaceIdentifierMultiple('items', $oItemTemplate);
 		}
-		
 		$oTemplate->replaceIdentifier('search_results', $oListTemplate);
 	}
 
 	public function getWords() {
 		return array();
 	}
-			 
+
 	public function setIsDynamicAndAllowedParameterPointers(&$bIsDynamic, &$aAllowedParams, $aModulesToCheck = null) {
 		$bIsDynamic = true;
 		$aAllowedParams = array('search');
 	}
-	
+
 }
