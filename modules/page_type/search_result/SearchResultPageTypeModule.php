@@ -51,7 +51,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 		$oListTemplate->replaceIdentifier('search_string', $sWords);
 
 		if(count($aResults) === 0) {
-			$oListTemplate->replaceIdentifier('no_results', StringPeer::getString('wns.search.no_results', null, null, array('search_string' => $sWords)));
+			$oListTemplate->replaceIdentifier('no_results', TranslationPeer::getString('wns.search.no_results', null, null, array('search_string' => $sWords)));
 		}
 
 		foreach($aResults as $iIndexId => $iCount) {
