@@ -85,6 +85,9 @@ class UpdateSearchIndexFileModule extends FileModule {
 		}
 		FrontendManager::$CURRENT_PAGE = $oPageNavigationItem->getMe();
 		$oPage = FrontendManager::$CURRENT_PAGE;
+		if(!$oPage->hasPageStringByLanguage($this->sLanguageId)) {
+			return false;
+		}
 		$bIsNotFound = false;
 		FilterModule::getFilters()->handlePageHasBeenSet($oPage, $bIsNotFound, $oNavigationItem);
 		FilterModule::getFilters()->handleRequestStarted();
