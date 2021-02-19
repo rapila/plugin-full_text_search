@@ -35,7 +35,7 @@ class SearchResultPageTypeModule extends PageTypeModule {
 				}
 				$oSearchWordQuery->addOr(SearchIndexWordPeer::WORD, $sWord, $sComparison);
 			}
-			$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
+			$oSearchWordQuery->joinSearchIndex()->useQuery('SearchIndex')->filterByLanguageId($sLanguageId)->joinPage()->useQuery('Page')->active(true)->filterByIsProtected(false)->endUse()->endUse();
 
 			foreach($oSearchWordQuery->find() as $oSearchIndexWord) {
 				$iId = $oSearchIndexWord->getSearchIndexId();
